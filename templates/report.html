@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Primary Birthday Report</title>
+  <style>
+    @page {
+      size: landscape;
+      margin: 0.35in;
+    }
+
+    :root {
+      --text: #111;
+      --muted: #444;
+      --border: #bbb;
+      --accent: #1e3a5f;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      color: var(--text);
+      background: #fff;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      padding: 0.35in;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+      border-bottom: 1.5px solid var(--accent);
+      margin-bottom: 0.15in;
+      padding-bottom: 0.08in;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 13pt;
+      color: var(--accent);
+      letter-spacing: 0.01em;
+    }
+
+    .meta {
+      margin: 0;
+      color: var(--muted);
+      font-size: 8pt;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 0.12in 0.14in;
+      height: calc(100vh - 0.9in);
+      min-height: 6.5in;
+    }
+
+    .month-block {
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .month-block h2 {
+      margin: 0 0 0.04in;
+      padding-bottom: 0.03in;
+      border-bottom: 1px solid var(--border);
+      font-size: 8.5pt;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1.1;
+    }
+
+    .month-block ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .month-block li {
+      display: grid;
+      grid-template-columns: 0.22in 1fr auto;
+      gap: 0.04in;
+      align-items: baseline;
+      font-size: 7pt;
+      line-height: 1.25;
+      margin: 0;
+      padding: 0.01in 0;
+    }
+
+    .day {
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .name.teacher {
+      font-weight: 600;
+    }
+
+    .class-label {
+      color: var(--muted);
+      font-size: 6.5pt;
+      white-space: nowrap;
+      text-align: right;
+    }
+
+    .empty-month {
+      color: #999;
+      font-size: 6.5pt;
+      font-style: italic;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-style: italic;
+      font-size: 9pt;
+    }
+
+    @media print {
+      body {
+        padding: 0;
+      }
+
+      .calendar-grid {
+        height: calc(100vh - 0.55in);
+      }
+
+      .month-block,
+      .calendar-grid {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+    }
+
+    @media screen {
+      body {
+        max-width: 11in;
+        margin: 0 auto;
+      }
+
+      .print-hint {
+        margin: 0 0 0.15in;
+        font-size: 8pt;
+        color: var(--muted);
+      }
+    }
+
+    @media print {
+      .print-hint {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <p class="print-hint">Print tip: choose Landscape orientation and disable headers/footers for a clean single-page layout.</p>
+
+  <header>
+    <h1>Primary Birthday Report</h1>
+    <p class="meta">{{ generated_on }} · {{ report.totals.all }} birthdays ({{ report.totals.children }} children, {{ report.totals.leaders }} leaders)</p>
+  </header>
+
+  {% if report.flat_rows %}
+    <div class="calendar-grid">
+      {% for month_name in report.month_names %}
+        {% set rows = report.by_month[month_name] %}
+        <section class="month-block">
+          <h2>{{ month_name }}</h2>
+          {% if rows %}
+            <ul>
+              {% for row in rows %}
+                <li>
+                  <span class="day">{{ row.birthday.split()[0] if row.birthday else '' }}</span>
+                  <span class="name{% if row.role != 'Child' %} teacher{% endif %}">{{ row.name }}</span>
+                  <span class="class-label">{{ row.class }}{% if row.role != 'Child' %} · {{ row.role }}{% endif %}</span>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="empty-month">—</p>
+          {% endif %}
+        </section>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="empty">No birthdays found for the selected filters.</p>
+  {% endif %}
+</body>
+</html>
